@@ -42,12 +42,16 @@ get_subpath_tree() {
     find_subtree $tree $SUBPATH
 }
 
-current_tree=""
-previous_commit=""
+deref_commit() {
+    commit=$1
+    git show  $commit | head -1 | sed 's/^commit //'
+}
+
+current_tree=`get_subpath_tree HEAD`
+previous_commit=`deref_commit HEAD`
+
 for commit in `git rev-list HEAD` ; do
     subtree=`get_subpath_tree $commit`
-    [ -z "$current_tree" ] && current_tree=$subtree
-    [ -z "$previous_commit" ] && previous_commit=$commit
 
     [ "$current_tree" = "$subtree" ] && continue
     current_tree=$subtree
