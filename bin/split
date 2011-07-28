@@ -1,0 +1,51 @@
+#!/bin/bash
+
+SUPER_REPO=$1
+SUBPATH=$2
+
+
+die() {
+    echo $* 1>&2
+    exit 1
+}
+
+cd $SUPER_REPO;
+test -d $SUBPATH || die "no such subpath"
+
+find_subtree() {
+    tree=$1
+    next=$(echo $2 | sed 's#/# #' | awk '{print $1}')
+    left=$(echo $2 | sed 's#/# #' | awk '{print $2}')
+    
+    nexttree=$(git cat-file -p $tree | grep "$next" | grep tree | awk '{print $3}')
+
+    if test -n "$left" ; then
+        find_subtree $nexttree $left 
+        return $?
+    fi
+
+    echo $nexttree
+}
+
+get_subpath_tree() {
+    commit=$1
+    tree=$(git cat-file -p $commit | head -1 | sed 's/^tree //')
+    find_subtree $tree $SUBPATH
+}
+
+current_tree=""
+previous_commit=""
+for commit in `git rev-list HEAD` ; do
+    subtree=`get_subpath_tree $commit`
+    [ -z "$current_tree" ] && current_tree=$subtree
+    [ -z "$previous_commit" ] && previous_commit=$commit
+
+    [ "$current_tree" = "$subtree" ] && continue
+    current_tree=$subtree
+
+    echo keeping commit $previous_commit
+    git cat-file -p $previous_commit | sed -n '/^$/,$p' | tail -n +2
+    echo
+
+    previous_commit=$commit
+done
