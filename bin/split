@@ -53,7 +53,10 @@ previous_commit=`deref_commit HEAD`
 for commit in `git rev-list HEAD` ; do
     subtree=`get_subpath_tree $commit`
 
-    [ "$current_tree" = "$subtree" ] && continue
+    if [ "$current_tree" = "$subtree" ] ; then
+        previous_commit=$commit
+        continue
+    fi
     current_tree=$subtree
 
     echo keeping commit $previous_commit
