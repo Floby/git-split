@@ -3,6 +3,15 @@
 SUPER_REPO=$1
 SUBPATH=$2
 
+MYDIR=$(dirname $0)
+if [ $MYDIR != "." ]; then
+    MYDIR=$(pwd)/$MYDIR
+else
+    MYDIR=$(dirname $(which $0))
+fi
+
+. $MYDIR/../lib/all.sh
+
 
 die() {
     echo $* 1>&2
