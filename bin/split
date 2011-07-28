@@ -10,7 +10,7 @@ else
     MYDIR=$(dirname $(which $0))
 fi
 
-. $MYDIR/../lib/all.sh
+# . $MYDIR/../lib/all.sh
 
 
 die() {
