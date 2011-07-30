@@ -37,7 +37,7 @@ list_useful_commits() {
         current_tree=$subtree
 
         log keeping commit $previous_commit
-        git cat-file -p $previous_commit | sed -n '/^$/,$p' | tail -n +2
+        git cat-file -p $previous_commit | sed -n '/^$/,$p' | tail -n +2 1>&2
         echo $previous_commit
         log
 
