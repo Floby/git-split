@@ -19,8 +19,13 @@ SPLIT_LIB_DIR=$SPLIT_ROOT/lib
 
 # we change the working directory to the main repository
 cd $SUPER_REPO;
+SUPER_REPO=`pwd`
 # test if the thing we're trying to split apart exists at all
 test -d $SUBPATH || die_usage 2 "no such subpath: $SUBPATH"
+# initialize git repository in subpath
+cd $SUBPATH
+    git init
+cd -
 
 commit_list=`mktemp`
 list_useful_commits $SUBPATH > $commit_list
