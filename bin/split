@@ -3,55 +3,34 @@
 SUPER_REPO=$1
 SUBPATH=$2
 
-MYDIR=$(dirname $0)
-if [ $MYDIR != "." ]; then
-    MYDIR=$(pwd)/$MYDIR
+# setup some path vars for our little project
+SPLIT_BIN_DIR=$(dirname $0)
+# if the dir is . then git-split is in the $PATH and likely to be symlinked
+if [ $SPLIT_BIN_DIR != "." ]; then
+    SPLIT_BIN_DIR=$(pwd)/$SPLIT_BIN_DIR
 else
-    MYDIR=$(dirname $(which $0))
+    SPLIT_BIN_DIR=$(dirname $(realpath $(which $0))) 
 fi
+SPLIT_ROOT=$SPLIT_BIN_DIR/..
+SPLIT_LIB_DIR=$SPLIT_ROOT/lib
 
-# . $MYDIR/../lib/all.sh
+# source our libs
+. $SPLIT_LIB_DIR/all.sh
 
 
-die() {
-    echo $* 1>&2
-    exit 1
-}
 
+
+# we change de working directory to the super repository
 cd $SUPER_REPO;
-test -d $SUBPATH || die "no such subpath"
+# test if the thing we're trying to split apart exists at all
+test -d $SUBPATH || die "no such subpath: $SUBPATH"
 
-find_subtree() {
-    tree=$1
-    next=$(echo $2 | sed 's#/# #' | awk '{print $1}')
-    left=$(echo $2 | sed 's#/# #' | awk '{print $2}')
-    
-    nexttree=$(git cat-file -p $tree | grep "$next" | grep tree | awk '{print $3}')
-
-    if test -n "$left" ; then
-        find_subtree $nexttree $left 
-        return $?
-    fi
-
-    echo $nexttree
-}
-
-get_subpath_tree() {
-    commit=$1
-    tree=$(git cat-file -p $commit | head -1 | sed 's/^tree //')
-    find_subtree $tree $SUBPATH
-}
-
-deref_commit() {
-    commit=$1
-    git show  $commit | head -1 | sed 's/^commit //'
-}
-
+# intialize these two
 current_tree=`get_subpath_tree HEAD`
 previous_commit=`deref_commit HEAD`
 
 for commit in `git rev-list HEAD` ; do
-    subtree=`get_subpath_tree $commit`
+    subtree=`get_subpath_tree $commit $SUBPATH`
 
     if [ "$current_tree" = "$subtree" ] ; then
         previous_commit=$commit
