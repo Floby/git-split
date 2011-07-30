@@ -15,4 +15,14 @@ log() {
     echo $* 1>&2
 }
 
+usage() {
+    log "usage: git-split <repository> <subpath>"
+    log
+    log repository is the git repository in which you\'ll operate
+    log subpath is the subdirectory you want to split apart as a submodule
+}
 
+die_usage() {
+    usage
+    die $*
+}
