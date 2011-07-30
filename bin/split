@@ -23,7 +23,7 @@ SPLIT_LIB_DIR=$SPLIT_ROOT/lib
 # we change de working directory to the super repository
 cd $SUPER_REPO;
 # test if the thing we're trying to split apart exists at all
-test -d $SUBPATH || die "no such subpath: $SUBPATH"
+test -d $SUBPATH || die 2 "no such subpath: $SUBPATH"
 
 # intialize these two
 current_tree=`get_subpath_tree HEAD`
