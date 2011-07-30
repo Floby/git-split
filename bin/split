@@ -22,9 +22,10 @@ cd $SUPER_REPO;
 # test if the thing we're trying to split apart exists at all
 test -d $SUBPATH || die_usage 2 "no such subpath: $SUBPATH"
 
-# intialize these two
+# intialize these
 current_tree=`get_subpath_tree HEAD`
 previous_commit=`deref_commit HEAD`
+commit_list=`mktemp`
 
 for commit in `git rev-list HEAD` ; do
     subtree=`get_subpath_tree $commit $SUBPATH`
@@ -37,7 +38,13 @@ for commit in `git rev-list HEAD` ; do
 
     echo keeping commit $previous_commit
     git cat-file -p $previous_commit | sed -n '/^$/,$p' | tail -n +2
+    echo $previous_commit >> $commit_list
     echo
 
     previous_commit=$commit
 done
+
+echo end of script
+echo keeping these commits
+cat $commit_list
+rm $commit_list
