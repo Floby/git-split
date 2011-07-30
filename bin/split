@@ -23,8 +23,7 @@ cd $SUPER_REPO;
 test -d $SUBPATH || die_usage 2 "no such subpath: $SUBPATH"
 
 commit_list=`mktemp`
-
-list_useful_commits $SUBPATH
+list_useful_commits $SUBPATH > $commit_list
 
 echo end of script
 echo keeping these commits

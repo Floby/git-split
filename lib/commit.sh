@@ -38,7 +38,7 @@ list_useful_commits() {
 
         log keeping commit $previous_commit
         git cat-file -p $previous_commit | sed -n '/^$/,$p' | tail -n +2
-        echo $previous_commit >> $commit_list
+        echo $previous_commit
         log
 
         previous_commit=$commit
