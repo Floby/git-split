@@ -26,3 +26,8 @@ die_usage() {
     usage
     die $*
 }
+
+is_sha1() {
+   [[ "$1" =~ ^[a-f0-9]{40}$ ]] 
+   return $?
+}
