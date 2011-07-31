@@ -8,9 +8,9 @@ into its own git repository. Keeping its history and adding itself to
 
 I found several other scripts doing more or less the same thing but:
     
-    1. none really matched my needs
-    2. they do too many things, so the doc is too complex for such a simple task
-    3. everybody seems to have fun with it, so why the hell wouldn't I?
+1. none really matched my needs
+2. they do too many things, so the doc is too complex for such a simple task
+3. everybody seems to have fun with it, so why the hell wouldn't I?
 
 The goal of this implementation is to only to create a git repository in
 a directory of an existing git project. Porting all relevant commits and
