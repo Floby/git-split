@@ -25,6 +25,7 @@ test -d $SUBPATH || die_usage 2 "no such subpath: $SUBPATH"
 # initialize git repository in subpath
 cd $SUBPATH
     git init
+    SUB_REPO=`pwd`
 cd -
 
 commit_list=`mktemp`
@@ -33,4 +34,8 @@ list_useful_commits $SUBPATH > $commit_list
 echo end of script
 echo keeping these commits
 cat $commit_list
+echo
+
+translate_commit `deref_commit HEAD` $SUB_REPO $SUBPATH >/dev/null
+
 rm $commit_list

@@ -44,3 +44,42 @@ list_useful_commits() {
         previous_commit=$commit
     done
 }
+
+
+TRANSLATED_COMMITS=`mktemp`
+
+# copy a commit to another repository while changing its base tree
+# and parent commits
+# usage: translate_commit <commit> <repository> [<subpath>]
+translate_commit() {
+    commit=$1
+    repository=$2
+    subpath=$3
+    [ -z "$repository" ] && die 10 "you must specify a repository in which to copy commit $commit"
+    
+    #log copying commit $commit
+    tree=`git cat-file -p $commit | head -1 | sed 's/^tree //'`
+
+    if [ ! -z "$subpath" ]; then
+        tree=`get_subpath_tree $commit $subpath`
+    fi
+
+    #log tree is $tree
+
+    [ -z "$tree" ] && return
+    
+    copy_tree $tree $repository >/dev/null
+    commit_body=`mktemp`
+    echo "tree $tree" > $commit_body
+    for parent in `git cat-file -p $commit | sed -n '/^parent [a-f0-9]*$/s/^parent //p'`; do
+        translated=`translate_commit $parent $repository $subpath`
+        echo "parent $translated" >> $commit_body
+    done
+
+    git cat-file -p $commit | sed -n '/^author/,$p' >> $commit_body
+
+    cat $commit_body |
+        ( cd $repository ; git hash-object -w --stdin -t commit )
+
+    #log translated commit $commit
+}
