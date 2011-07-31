@@ -12,7 +12,7 @@ I found several other scripts doing more or less the same thing but:
 2. they do too many things, so the doc is too complex for such a simple task
 3. everybody seems to have fun with it, so why the hell wouldn't I?
 
-The goal of this implementation is to only to create a git repository in
+The goal of this implementation is only to create a git repository in
 a directory of an existing git project. Porting all relevant commits and
 branches. I'm all for micro-utilities. So here is one.
 
