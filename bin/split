@@ -46,7 +46,7 @@ cd $SUBPATH
     SUB_REPO=`pwd`
 cd - >/dev/null
 
-# ↓ thing are happening here ↓
+# ↓ thing are happening here ↓ head over lib/commit.sh
 new_head=$(translate_commit `deref_commit HEAD` $SUB_REPO $SUBPATH)
 
 # make the port clean by creating branches and reading the tree
