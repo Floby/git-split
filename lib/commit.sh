@@ -73,6 +73,7 @@ translate_commit() {
     echo "tree $tree" > $commit_body
     for parent in `git cat-file -p $commit | sed -n '/^parent [a-f0-9]*$/s/^parent //p'`; do
         translated=`translate_commit $parent $repository $subpath`
+        [ -z "$translated" ] && continue
         echo "parent $translated" >> $commit_body
     done
 
