@@ -45,6 +45,18 @@ list_useful_commits() {
     done
 }
 
+get_parent_commits() {
+    commit=$1
+    [ "commit" = `object_type $commit` ] || die 20 "parameter is not a commit"
+    git cat-file -p $commit | sed '/^author/,$d' | grep parent | awk '{print $2}'
+}
+
+get_commit_tree() {
+    commit=$1
+    [ "commit" = `object_type $commit` ] || die 20 "parameter is not a commit"
+    git cat-file -p $commit | head -1 | awk '{print $2}' 
+}
+
 
 TRANSLATED_COMMITS=`mktemp`
 
@@ -57,11 +69,10 @@ translate_commit() {
     subpath=$3
     [ -z "$repository" ] && die 10 "you must specify a repository in which to copy commit $commit"
     
-    #log copying commit $commit
-    tree=`git cat-file -p $commit | head -1 | sed 's/^tree //'`
+    tree=`get_commit_tree $commit`
 
     if [ ! -z "$subpath" ]; then
-        tree=`get_subpath_tree $commit $subpath`
+        tree=`find_subtree $tree $subpath`
     fi
 
     #log tree is $tree
@@ -71,7 +82,7 @@ translate_commit() {
     copy_tree $tree $repository >/dev/null
     commit_body=`mktemp`
     echo "tree $tree" > $commit_body
-    for parent in `git cat-file -p $commit | sed -n '/^parent [a-f0-9]*$/s/^parent //p'`; do
+    for parent in `get_parent_commits $commit`; do
         translated=`translate_commit $parent $repository $subpath`
         [ -z "$translated" ] && continue
         echo "parent $translated" >> $commit_body
