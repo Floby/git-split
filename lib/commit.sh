@@ -67,6 +67,8 @@ translate_commit() {
     commit=$1
     repository=$2
     subpath=$3
+
+    log COPYING COMMIT $*
     [ -z "$repository" ] && die 10 "you must specify a repository in which to copy commit $commit"
     
     tree=`get_commit_tree $commit`
@@ -75,23 +77,55 @@ translate_commit() {
         tree=`find_subtree $tree $subpath`
     fi
 
-    #log tree is $tree
-
     [ -z "$tree" ] && return
+
+    # here we may not have to translate this commit if it doesn't
+    # bring any change to the watched subtree
+    # however if this is a merge (more than one parent) we keep it
+    # to maintain branch coherence
+    if [ 1 -eq `get_parent_commits $commit | wc -w` ]; then
+        # there is only one parent commit
+        parent=`get_parent_commits $commit`
+        log only one parent $parent
+
+        # this next line is ugly but I was out of var name ideas
+        parent_subtree=$(find_subtree $(get_commit_tree $parent) $subpath)
+        log parent subtree is $parent_subtree
+        log mine is $tree
+        if [ "$parent_subtree" = "$tree" ]; then
+            log "con't copy this commit" $commit
+            log copying $parent instead
+            # the parent commit subtree is the same as ours
+            # no need to translate this commit
+            translate_commit $parent $repository $subpath $tree
+        fi
+    fi
+
+    # if we got there, we have some copying to do!
     
+    # copy the tree to the submodule repository
     copy_tree $tree $repository >/dev/null
+
+    # we construct the body of the new commit step by step
+    # we store the current commit body in a temp file
     commit_body=`mktemp`
-    echo "tree $tree" > $commit_body
+
+    echo "tree $tree" > $commit_body # this, we have
+
     for parent in `get_parent_commits $commit`; do
-        translated=`translate_commit $parent $repository $subpath`
+        log "querying translated for parent $parent"
+        translated=`translate_commit $parent $repository $subpath $tree`
         [ -z "$translated" ] && continue
         echo "parent $translated" >> $commit_body
     done
 
+    # copy the rest of the original commit info unchanged (author, committer, description)
     git cat-file -p $commit | sed -n '/^author/,$p' >> $commit_body
 
+    # write this new commit in the sub repository
     cat $commit_body |
         ( cd $repository ; git hash-object -w --stdin -t commit )
 
-    #log translated commit $commit
+    # clean up
+    rm $commit_body
 }
