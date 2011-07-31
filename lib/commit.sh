@@ -68,7 +68,6 @@ translate_commit() {
     repository=$2
     subpath=$3
 
-    log COPYING COMMIT $*
     [ -z "$repository" ] && die 10 "you must specify a repository in which to copy commit $commit"
     
     tree=`get_commit_tree $commit`
@@ -86,15 +85,10 @@ translate_commit() {
     if [ 1 -eq `get_parent_commits $commit | wc -w` ]; then
         # there is only one parent commit
         parent=`get_parent_commits $commit`
-        log only one parent $parent
 
         # this next line is ugly but I was out of var name ideas
         parent_subtree=$(find_subtree $(get_commit_tree $parent) $subpath)
-        log parent subtree is $parent_subtree
-        log mine is $tree
         if [ "$parent_subtree" = "$tree" ]; then
-            log "con't copy this commit" $commit
-            log copying $parent instead
             # the parent commit subtree is the same as ours
             # no need to translate this commit
             translate_commit $parent $repository $subpath $tree
@@ -113,7 +107,6 @@ translate_commit() {
     echo "tree $tree" > $commit_body # this, we have
 
     for parent in `get_parent_commits $commit`; do
-        log "querying translated for parent $parent"
         translated=`translate_commit $parent $repository $subpath $tree`
         [ -z "$translated" ] && continue
         echo "parent $translated" >> $commit_body

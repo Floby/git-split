@@ -26,20 +26,11 @@ test -d $SUBPATH || die_usage 2 "no such subpath: $SUBPATH"
 cd $SUBPATH
     git init
     SUB_REPO=`pwd`
-cd -
-
-commit_list=`mktemp`
-list_useful_commits $SUBPATH > $commit_list
-
-echo end of script
-echo keeping these commits
-cat $commit_list
-echo
+cd - >/dev/null
 
 new_head=$(translate_commit `deref_commit HEAD` $SUB_REPO $SUBPATH)
 cd $SUB_REPO
     git branch master $new_head
     git read-tree master
-cd -
+cd - >/dev/null
 
-rm $commit_list
