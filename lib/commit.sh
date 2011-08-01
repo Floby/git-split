@@ -98,11 +98,15 @@ translate_commit() {
         if [ "$parent_subtree" = "$tree" ]; then
             # the parent commit subtree is the same as ours
             # no need to translate this commit
-            translate_commit $parent $repository $subpath $tree
+            log -n skipping commit `echo $commit | sed -r 's/^(.{6}).*$/\1/'` ": "
+            git cat-file -p $commit | sed -n '/^$/,$p' | sed '1d' >&2
+            translate_commit $parent $repository $subpath a$depth
         fi
     fi
 
     # if we got there, we have some copying to do!
+    log -n keeping commit `echo $commit | sed -r 's/^(.{6}).*$/\1/'` ": "
+    git cat-file -p $commit | sed -n '/^$/,$p' | sed '1d' >&2
     
     # copy the tree to the submodule repository
     copy_tree $tree $repository >/dev/null
@@ -114,9 +118,10 @@ translate_commit() {
     echo "tree $tree" > $commit_body # this, we have
 
     for parent in `get_parent_commits $commit`; do
-        translated=`translate_commit $parent $repository $subpath $tree`
-        [ -z "$translated" ] && continue
-        echo "parent $translated" >> $commit_body
+        translated=`translate_commit $parent $repository $subpath`
+        if [ ! -z "$translated" ] ; then
+            echo "parent $translated" >> $commit_body
+        fi
     done
 
     # copy the rest of the original commit info unchanged (author, committer, description)
