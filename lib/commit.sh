@@ -78,6 +78,13 @@ translate_commit() {
 
     [ -z "$tree" ] && return
 
+    # if this commit has already been translated
+    # then give it to them
+    translated=`grep $commit $TRANSLATED_COMMITS | awk '{print $2}'`
+    if [ ! -z "$translated" ]; then
+        return
+    fi
+    
     # here we may not have to translate this commit if it doesn't
     # bring any change to the watched subtree
     # however if this is a merge (more than one parent) we keep it
@@ -116,8 +123,10 @@ translate_commit() {
     git cat-file -p $commit | sed -n '/^author/,$p' >> $commit_body
 
     # write this new commit in the sub repository
-    cat $commit_body |
-        ( cd $repository ; git hash-object -w --stdin -t commit )
+    translated=`cat $commit_body | ( cd $repository ; git hash-object -w --stdin -t commit )`
+    echo $commit $translated >> $TRANSLATED_COMMITS
+
+    echo $translated
 
     # clean up
     rm $commit_body
