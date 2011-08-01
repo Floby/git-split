@@ -101,6 +101,7 @@ translate_commit() {
             log -n skipping commit `echo $commit | sed -r 's/^(.{6}).*$/\1/'` ": "
             git cat-file -p $commit | sed -n '/^$/,$p' | sed '1d' >&2
             translate_commit $parent $repository $subpath a$depth
+            return
         fi
     fi
 
