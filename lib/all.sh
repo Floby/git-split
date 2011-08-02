@@ -13,3 +13,9 @@ object_type() {
     git cat-file -t $1
     return $?
 }
+
+git_cat_file() {
+    output=`git cat-file $*`
+    [ 0 != "$?" ] && die 50 "cat file failed on git cat-file $*"
+    echo $output
+}
