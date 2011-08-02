@@ -12,7 +12,7 @@ deref_commit() {
 get_subpath_tree() {
     commit=$1
     path=$2
-    tree=$(git cat-file -p $commit | head -1 | sed 's/^tree //')
+    tree=$(git_cat_file -p $commit | head -1 | sed 's/^tree //')
     find_subtree $tree $path
 }
 
@@ -37,7 +37,7 @@ list_useful_commits() {
         current_tree=$subtree
 
         log keeping commit $previous_commit
-        git cat-file -p $previous_commit | sed -n '/^$/,$p' | tail -n +2 1>&2
+        git_cat_file -p $previous_commit | sed -n '/^$/,$p' | tail -n +2 1>&2
         echo $previous_commit
         log
 
@@ -47,21 +47,22 @@ list_useful_commits() {
 
 get_parent_commits() {
     commit=$1
-    [ "commit" = `object_type $commit` ] || die 20 "parameter is not a commit"
-    git cat-file -p $commit | sed '/^author/,$d' | grep parent | awk '{print $2}'
+    log fetching parents of $commit
+    [ "commit" = `object_type $commit` ] || die 20 "parameter $commit is not a commit"
+    git_cat_file -p $commit | sed '/^author/,$d' | grep parent | awk '{print $2}'
 }
 
 get_commit_tree() {
     commit=$1
-    [ "commit" = `object_type $commit` ] || die 20 "parameter is not a commit"
-    git cat-file -p $commit | head -1 | awk '{print $2}' 
+    [ "commit" = `object_type $commit` ] || die 20 "parameter $commit is not a commit"
+    git_cat_file -p $commit | head -1 | awk '{print $2}' 
 }
 
 oneline_print_commit() {
     commit=$1
 
-    [ "commit" != `object_type $commit` ] && die 20 "Object is not a commit"
-    comment=`git cat-file -p $commit | sed -n '/^$/,$p' | sed -n 2p`
+    [ "commit" != `object_type $commit` ] && die 20 "Object $commit is not a commit"
+    comment=`git_cat_file -p $commit | sed -n '/^$/,$p' | sed -n 2p`
     short=`short_sha $commit`
     echo $short '->' $comment
 }
@@ -80,10 +81,12 @@ translate_commit() {
     [ -z "$repository" ] && die 10 "you must specify a repository in which to copy commit $commit"
     
     tree=`get_commit_tree $commit`
+    log got tree $tree
 
     if [ ! -z "$subpath" ]; then
         tree=`find_subtree $tree $subpath`
     fi
+    log got subtree $tree
 
     [ -z "$tree" ] && return
 
@@ -103,6 +106,7 @@ translate_commit() {
         parent=`get_parent_commits $commit`
 
         # this next line is ugly but I was out of var name ideas
+        log single parent is $parent
         parent_subtree=$(find_subtree $(get_commit_tree $parent) $subpath)
         if [ "$parent_subtree" = "$tree" ]; then
             # the parent commit subtree is the same as ours
@@ -133,7 +137,7 @@ translate_commit() {
     done
 
     # copy the rest of the original commit info unchanged (author, committer, description)
-    git cat-file -p $commit | sed -n '/^author/,$p' >> $commit_body
+    git_cat_file -p $commit | sed -n '/^author/,$p' >> $commit_body
 
     # write this new commit in the sub repository
     translated=`cat $commit_body | ( cd $repository ; git hash-object -w --stdin -t commit )`
