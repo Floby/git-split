@@ -57,6 +57,15 @@ get_commit_tree() {
     git cat-file -p $commit | head -1 | awk '{print $2}' 
 }
 
+oneline_print_commit() {
+    commit=$1
+
+    [ "commit" != `object_type $commit` ] && die 20 "Object is not a commit"
+    comment=`git cat-file -p $commit | sed -n '/^$/,$p' | sed -n 2p`
+    short=`short_sha $commit`
+    echo $short $comment
+}
+
 
 TRANSLATED_COMMITS=`mktemp`
 
@@ -98,16 +107,14 @@ translate_commit() {
         if [ "$parent_subtree" = "$tree" ]; then
             # the parent commit subtree is the same as ours
             # no need to translate this commit
-            log -n skipping commit `echo $commit | sed -r 's/^(.{6}).*$/\1/'` ": "
-            git cat-file -p $commit | sed -n '/^$/,$p' | sed '1d' >&2
+            log -e $RED skipping commit `oneline_print_commit $commit` $NORMAL
             translate_commit $parent $repository $subpath a$depth
             return
         fi
     fi
 
     # if we got there, we have some copying to do!
-    log -n keeping commit `echo $commit | sed -r 's/^(.{6}).*$/\1/'` ": "
-    git cat-file -p $commit | sed -n '/^$/,$p' | sed '1d' >&2
+    log -e $GREEN keeping commit `oneline_print_commit $commit` $NORMAL
     
     # copy the tree to the submodule repository
     copy_tree $tree $repository >/dev/null
