@@ -63,7 +63,7 @@ oneline_print_commit() {
     [ "commit" != `object_type $commit` ] && die 20 "Object is not a commit"
     comment=`git cat-file -p $commit | sed -n '/^$/,$p' | sed -n 2p`
     short=`short_sha $commit`
-    echo $short $comment
+    echo $short '->' $comment
 }
 
 
@@ -107,14 +107,14 @@ translate_commit() {
         if [ "$parent_subtree" = "$tree" ]; then
             # the parent commit subtree is the same as ours
             # no need to translate this commit
-            log -e $RED skipping commit `oneline_print_commit $commit` $NORMAL
+            log -e $RED "skipping\tcommit" `oneline_print_commit $commit` $NORMAL
             translate_commit $parent $repository $subpath a$depth
             return
         fi
     fi
 
     # if we got there, we have some copying to do!
-    log -e $GREEN keeping commit `oneline_print_commit $commit` $NORMAL
+    log -e $GREEN "keeping\tcommit" `oneline_print_commit $commit` $NORMAL
     
     # copy the tree to the submodule repository
     copy_tree $tree $repository >/dev/null
