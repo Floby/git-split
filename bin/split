@@ -6,13 +6,8 @@ SUBPATH=$1
 
 
 # setup some path vars for our little project
-SPLIT_BIN_DIR=$(dirname $0)
-# if the dir is . then git-split is in the $PATH and likely to be symlinked
-if [ $SPLIT_BIN_DIR != "." ]; then
-    SPLIT_BIN_DIR=$(pwd)/$SPLIT_BIN_DIR
-else
-    SPLIT_BIN_DIR=$(dirname $(realpath $(which $0))) 
-fi
+SPLIT_BIN_DIR=$(dirname $(realpath $0))
+echo $SPLIT_BIN_DIR
 SPLIT_ROOT=$SPLIT_BIN_DIR/..
 SPLIT_LIB_DIR=$SPLIT_ROOT/lib
 
