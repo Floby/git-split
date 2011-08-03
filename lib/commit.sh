@@ -47,7 +47,6 @@ list_useful_commits() {
 
 get_parent_commits() {
     commit=$1
-    log fetching parents of $commit
     [ "commit" = `object_type $commit` ] || die 20 "parameter $commit is not a commit"
     git_cat_file -p $commit | sed '/^author/,$d' | grep parent | awk '{print $2}'
 }
@@ -81,12 +80,10 @@ translate_commit() {
     [ -z "$repository" ] && die 10 "you must specify a repository in which to copy commit $commit"
     
     tree=`get_commit_tree $commit`
-    log got tree $tree
 
     if [ ! -z "$subpath" ]; then
         tree=`find_subtree $tree $subpath`
     fi
-    log got subtree $tree
 
     [ -z "$tree" ] && return
 
@@ -106,7 +103,6 @@ translate_commit() {
         parent=`get_parent_commits $commit`
 
         # this next line is ugly but I was out of var name ideas
-        log single parent is $parent
         parent_subtree=$(find_subtree $(get_commit_tree $parent) $subpath)
         if [ "$parent_subtree" = "$tree" ]; then
             # the parent commit subtree is the same as ours
