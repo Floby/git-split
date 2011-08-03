@@ -37,6 +37,17 @@ short_sha() {
     echo $sha | sed -r 's/^(.{6}).*$/\1/'
 }
 
+
+gc() {
+    env | grep | GITSPLIT_TMP | xargs rm
+}
+
+gc_error() {
+    gc
+    rm -rf $SUBPATH/.git
+}
+
+
 GREEN="\\033[1;32m"
 NORMAL="\\033[0;39m"
 RED="\\033[1;31m"
